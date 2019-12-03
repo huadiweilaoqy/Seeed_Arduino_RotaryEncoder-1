@@ -1,62 +1,90 @@
-# Seeed_Arduino_RotaryEncoder
-
-### Introduction
+# GroveEncoder Library
 
 This library support Encoder.
 
-Connect the Encoder to the D2 and D3 pins of the motherboard.You can use other pins if you want.
+# Hardware requirements
 
-###  Usage
+- Arduino/Genuino UNO
+- Grove Shield and a cable
+- Grove Rotary Encoder v1.2
 
-   1.git clone this resp to your Arduino IDE'S libraries directory.
+## Recommended hardware setup
 
-   2.Run the demo "encoderTest" on examples directory.
+1. Put the Grove Kit Shield in the Arduino UNO
+2. Plug one side of the cable into the D2 port on the Grove Shield
+3. Plug the other side of the cable into the Grove Rotary Encoder v1.2
+4. You're done!  Power it on and start programming.
 
-### Software usage  
+# Installation
 
-- Install Seeed Arduino RotaryEncoder library to Arduino.  
+Download the ZIP and install using the Arduino IDE.  Alternative 
+installation instructions may be found [here](https://www.arduino.cc/en/Guide/Libraries).
 
-- Start a project.  
+# Usage
 
-- Create the callback function and set the Encoder pin.(just set SIGA.SIGB pin is equal to SIGA pin plus 1.)
+The GroveEncoder library makes it possible to read the value off of an encoder.
+When the knob is turned clockwise, the value will increment.  When the knob is
+turned counterclockwise, the number will decrement.  This value is a 32 bit
+signed integer.
 
-   Usage of the library, see Example encoderTest
-   
-   1. Add headers
-   ```
-      #include "GroveEncoder.h"
-   ```
-   2. Create the callback function.The callback function gets the current Angle and the status of the button press.
-   Define a 'value' to determine whether the Angle value has changed.Define a 'bt_flag' to prevent the button value from being read    more than once.And set 'bt flag' to 1 in the while() function.You can also get the Angle value through the getValue() function.
-   ```
-      int value = 0;
-      int bt_flag = 0;
-      void myCallback(int newValue, bool flag) {
-        if(value != newValue)
-        {
-          value = newValue;
-          Serial.print(newValue, HEX);
-          Serial.print("\n");
-        }
-        if(flag && bt_flag)
-        {
-          Serial.println("button");
-          bt_flag = 0;
-        }
-      }
-   ```
-   ```
-        while(1)
-        {
-          Serial.println(myEncoder.getValue());
-          delay(100);
-          bt_flag = 1;
-        }
-   ```
+You can use this library via polling, or attach an interrupt handler if you're
+an advanced user.  Please see the examples directory.
 
-   3. Initialize the Encoder.The parameters are the SIGA pin and the callback function name, respectively.
-   
-   ```
-      GroveEncoder myEncoder(2, &myCallback);
-   ```
-   
+## Polling
+
+Simply create a GroveEncoder object and pass NULL as the second parameter.
+
+```c
+#include <GroveEncoder.h>
+
+void loop() {
+  GroveEncoder myEncoder(7, NULL);
+  while (1)
+  {
+    int value = myEncoder.getValue();
+    // getValue returns the number currently on the encoder.
+    Serial.print(value, HEX);
+  }
+}
+```
+
+## Interrupts
+
+Create a GroveEncoder object and pass it a pin as well as a callback.
+
+```c
+#include <GroveEncoder.h>
+int value = 0;
+int bt_flag = 0;
+void myCallback(int newValue, bool flag) {
+  if(value != newValue)
+  {
+    value = newValue;
+    Serial.print(newValue, HEX);
+    Serial.print("\n");
+  }
+  if(flag && bt_flag)
+  {
+    Serial.println("button");
+    bt_flag = 0;
+  }
+}
+GroveEncoder myEncoder(2, &myCallback);
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  while(1)
+  {
+    delay(100);
+    bt_flag = 1;
+  }
+}
+```
+
+# License
+
+See LICENSE.
